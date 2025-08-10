@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catch the Hearts 💖</title>
+<style>
+    body {
+        margin: 0;
+        background: linear-gradient(#ffdee9, #b5fffc);
+        font-family: 'Comic Sans MS', cursive, sans-serif;
+        overflow: hidden;
+        touch-action: none; /* Prevent scrolling during game */
+    }
+    #gameArea {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+    }
+    .basket {
+        position: absolute;
+        bottom: 5vh;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 12vw;
+        max-width: 80px;
+        aspect-ratio: 4 / 3;
+        background: url('https://cdn-icons-png.flaticon.com/512/3082/3082031.png') no-repeat center/contain;
+    }
+    .heart {
+        position: absolute;
+        top: 0;
+        font-size: 2rem;
+        animation: fall linear forwards;
+    }
+    @keyframes fall {
+        to {
+            transform: translateY(100vh);
+        }
+    }
+    #scoreBoard {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: clamp(16px, 4vw, 24px);
+        color: #ff2e63;
+        font-weight: bold;
+        text-shadow: 1px 1px 3px white;
+    }
+    #message {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: clamp(18px, 5vw, 28px);
+        background: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: 10px;
+        display: none;
+        text-align: center;
+        color: #ff2e63;
+        box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        z-index: 10;
+    }
+    /* Touch controls */
+    .controls {
+        position: absolute;
+        bottom: 2vh;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 5vw;
+        z-index: 5;
+    }
+    .btn {
+        background: rgba(255,255,255,0.7);
+        border: 2px solid #ff2e63;
+        border-radius: 50%;
+        width: 12vw;
+        max-width: 70px;
+        aspect-ratio: 1/1;
+        font-size: clamp(16px, 5vw, 24px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ff2e63;
+        user-select: none;
+    }
+    .btn:active {
+        background: rgba(255,255,255,0.9);
+    }
+</style>
+</head>
+<body>
+
+<audio id="catchSound" src="children-saying-yay-praise-and-worship-jesus-299607.mp3"></audio>
+
+<div id="gameArea">
+    <div id="scoreBoard">Score: 0</div>
+    <div class="basket" id="basket"></div>
+    <div id="message">🎉 Happy Birthday My Love! ❤️<br>You caught all my hearts! 💕</div>
+    <div class="controls">
+        <div class="btn" id="leftBtn">⬅️</div>
+        <div class="btn" id="rightBtn">➡️</div>
+    </div>
+</div>
+
+<script>
+const gameArea = document.getElementById("gameArea");
+const basket = document.getElementById("basket");
+const scoreBoard = document.getElementById("scoreBoard");
+const message = document.getElementById("message");
+const catchSound = document.getElementById("catchSound");
+const leftBtn = document.getElementById("leftBtn");
+const rightBtn = document.getElementById("rightBtn");
+
+let basketX = window.innerWidth / 2 - basket.offsetWidth / 2; 
+let score = 0;
+const targetScore = 10;
+
+// Move basket by keyboard
+document.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") moveBasket(-20);
+    if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") moveBasket(20);
+});
+
+// Move basket by touch buttons
+leftBtn.addEventListener("touchstart", () => moveBasket(-20));
+rightBtn.addEventListener("touchstart", () => moveBasket(20));
+
+function moveBasket(amount) {
+    basketX += amount;
+    basketX = Math.max(0, Math.min(window.innerWidth - basket.offsetWidth, basketX));
+    basket.style.left = basketX + "px";
+}
+
+// Create falling hearts
+function createHeart() {
+    const heart = document.createElement("div");
+    heart.classList.add("heart");
+    heart.textContent = "❤️";
+    heart.style.left = Math.random() * (window.innerWidth - 30) + "px";
+    heart.style.animationDuration = (Math.random() * 2 + 2) + "s";
+    gameArea.appendChild(heart);
+
+    let heartInterval = setInterval(() => {
+        const heartRect = heart.getBoundingClientRect();
+        const basketRect = basket.getBoundingClientRect();
+        
+        if (
+            heartRect.bottom >= basketRect.top &&
+            heartRect.left >= basketRect.left &&
+            heartRect.right <= basketRect.right
+        ) {
+            score++;
+            scoreBoard.textContent = "Score: " + score;
+            catchSound.currentTime = 0;
+            catchSound.play();
+            heart.remove();
+            clearInterval(heartInterval);
+
+            if (score >= targetScore) {
+                message.style.display = "block";
+            }
+        }
+
+        if (heartRect.top > window.innerHeight) {
+            heart.remove();
+            clearInterval(heartInterval);
+        }
+    }, 50);
+}
+
+setInterval(createHeart, 1000);
+</script>
+
+</body>
+</html>
